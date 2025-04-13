@@ -1,0 +1,21 @@
+# directories
+**/bin/
+**/obj/
+**/out/
+**/Docker/
+
+# files
+Dockerfile*
+**/*.md
+
+.vscode/
+.vs/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*.swn
+*.sln
+*.suo

@@ -191,7 +191,7 @@ public sealed class RecipeServiceTest
     }
 
     [Fact]
-    public void AddRecipe_ReturnsNull()
+    public void AddRecipe_WithWrongUid_ReturnsNull()
     {
         var recipe = _recipeService.AddRecipe(_wrongUid, _wrongRecipeId,
             _testRecipeDetailsDTO1);

@@ -48,7 +48,7 @@ public sealed class CommentServiceTest
     }
 
     [Fact]
-    public void AddComment_ReturnsNull()
+    public void AddComment_WithWrongId_ReturnsNull()
     {
         var comment = _commentService.AddComment(_wrongUserId, _wrongRecipeId, "Test");
         _commentRepositoryMock.Verify(r =>

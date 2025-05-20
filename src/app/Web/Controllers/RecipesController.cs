@@ -142,7 +142,7 @@ public class RecipesController : Controller
         string _currentId = _contextService.GetUserId();
         if (!_likeService.AddLike(_currentId, recipeId))
         {
-            if(_likeService.DeleteLike(_currentId, recipeId))
+            if (_likeService.DeleteLike(_currentId, recipeId))
             {
                 ViewBag.LikeDeleted = true;
             }

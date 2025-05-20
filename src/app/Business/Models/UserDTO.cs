@@ -25,7 +25,7 @@ public class UserDTO
 
     public static UserDTO MapUser(User user)
     {
-        return new UserDTO ()
+        return new UserDTO()
         {
             Id = user.Id,
             UserName = user.UserName,

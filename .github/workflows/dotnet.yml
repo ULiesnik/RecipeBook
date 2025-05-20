@@ -60,10 +60,12 @@ jobs:
         shell: pwsh
         run: |
           [xml]$cov = Get-Content "TestResults/**/coverage.cobertura.xml"
-          $lineRate = $cov.coverage.line-rate
-          # Convert to percent with 2 decimals
-          $coveragePercent = [math]::Round([double]$lineRate * 100, 2)
-          Write-Output "coverage=$coveragePercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $lineRate = $cov.coverage.'line-rate'
+          $branchRate = $cov.coverage.'branch-rate'
+          $linePercent = [math]::Round([double]$lineRate * 100, 2)
+          $branchPercent = [math]::Round([double]$branchRate * 100, 2)
+          Write-Output "line_coverage=$linePercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Output "branch_coverage=$branchPercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Comment coverage on PR
         uses: peter-evans/create-or-update-comment@v3
@@ -73,6 +75,13 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Code Coverage Report
-            Line coverage: **${{ steps.coverage_summary.outputs.coverage }}%**
+            - Line coverage: **${{ steps.coverage_summary.outputs.line_coverage }}%**
+            - Branch coverage: **${{ steps.coverage_summary.outputs.branch_coverage }}%**
 
             [Full coverage report](./path/to/your/coverage-report/index.html)
+            
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: coveragereport/

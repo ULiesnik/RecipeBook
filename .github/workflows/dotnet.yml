@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -23,10 +23,60 @@ jobs:
           dotnet-version: '6.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./src/test/RecipeBookTest.csproj
+        run: dotnet restore ./src/app/Web/Web.csproj; dotnet restore ./src/test/RecipeBookTest.csproj
 
-      - name: Build tests
-        run: dotnet build ./src/test/RecipeBookTest.csproj --configuration Release --no-restore
+      - name: Lint with dotnet format
+        run: dotnet format ./src/app/Web/Web.csproj --verify-no-changes --severity warn; dotnet format ./src/app/Data/Data.csproj --verify-no-changes --severity warn; dotnet format ./src/app/Business/Business.csproj --verify-no-changes --severity warn
+
+      - name: Build
+        run: dotnet build ./src/app/Web/Web.csproj --no-restore --configuration Release; dotnet build ./src/test/RecipeBookTest.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test ./src/test/RecipeBookTest.csproj --verbosity normal
+        run: dotnet test ./src/test/RecipeBookTest.csproj --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: Generate coverage report
+        shell: powershell
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool --version 4.8.12
+          & reportgenerator -reports:TestResults/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coveragereport
+
+      - name: Generate Build Report
+        run: echo "Build and tests succeeded for ${{ github.repository }} on ${{ github.ref_name }}"
+
+      - name: Extract coverage summary
+        id: coverage_summary
+        shell: pwsh
+        run: |
+          [xml]$cov = Get-Content "TestResults/**/coverage.cobertura.xml"
+          $lineRate = $cov.coverage.'line-rate'
+          $branchRate = $cov.coverage.'branch-rate'
+          $linePercent = [math]::Round([double]$lineRate * 100, 2)
+          $branchPercent = [math]::Round([double]$branchRate * 100, 2)
+          Write-Output "line_coverage=$linePercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Output "branch_coverage=$branchPercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Comment coverage on PR
+        uses: peter-evans/create-or-update-comment@v4
+        if: github.event_name == 'pull_request'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Code Coverage Report
+            - Line coverage: **${{ steps.coverage_summary.outputs.line_coverage }}%**
+            - Branch coverage: **${{ steps.coverage_summary.outputs.branch_coverage }}%**
+
+            [Full coverage report](./path/to/your/coverage-report/index.html)
+            

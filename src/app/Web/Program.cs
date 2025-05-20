@@ -52,7 +52,7 @@ try
     builder.Services.AddScoped<IContextService, ContextService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
 
-    builder.Services.ConfigureApplicationCookie( config  =>
+    builder.Services.ConfigureApplicationCookie(config =>
         config.LoginPath = builder.Configuration["Application:LoginPath"]);
 
     builder.Services.Configure<SMTPConfigModel>(builder.Configuration.GetSection("SMTPConfig"));

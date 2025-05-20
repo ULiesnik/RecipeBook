@@ -36,7 +36,7 @@ public class AccountService : IAccountService
         }
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        if(!string.IsNullOrEmpty(token))
+        if (!string.IsNullOrEmpty(token))
         {
             await SendConfirmationEmailAsync(user, token);
         }

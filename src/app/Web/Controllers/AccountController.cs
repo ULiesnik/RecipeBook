@@ -29,7 +29,7 @@ public class AccountController : Controller
         if (ModelState.IsValid)
         {
             var result = await _accountService.CreateUserAsync(userModel);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 ViewBag.Success = true;
                 return View("EmailSent");
@@ -70,7 +70,7 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> ConfirmEmail(string uid, string token)
     {
-        if(!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
+        if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
         {
             token = token.Replace(' ', '+');
             var result = await _accountService.ConfirmEmailAsync(uid, token);

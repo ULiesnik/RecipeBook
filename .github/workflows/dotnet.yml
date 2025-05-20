@@ -40,9 +40,11 @@ jobs:
           name: test-results
           path: ./TestResults
 
-      - name: Report code coverage to Coverlet
+      - name: Generate coverage report
+        shell: powershell
         run: |
-          reportgenerator -reports:TestResults/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          & dotnet-reportgenerator-globaltool -reports:TestResults/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

@@ -5,6 +5,7 @@
 *.vs
 *.suo
 TestResults
+coveragereport
 
 # Build results
 [Dd]ebug/

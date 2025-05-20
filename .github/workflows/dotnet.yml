@@ -54,3 +54,25 @@ jobs:
 
       - name: Generate Build Report
         run: echo "Build and tests succeeded for ${{ github.repository }} on ${{ github.ref_name }}"
+
+      - name: Extract coverage summary
+        id: coverage_summary
+        shell: pwsh
+        run: |
+          [xml]$cov = Get-Content "TestResults/**/coverage.cobertura.xml"
+          $lineRate = $cov.coverage.line-rate
+          # Convert to percent with 2 decimals
+          $coveragePercent = [math]::Round([double]$lineRate * 100, 2)
+          Write-Output "coverage=$coveragePercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Comment coverage on PR
+        uses: peter-evans/create-or-update-comment@v3
+        if: github.event_name == 'pull_request'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Code Coverage Report
+            Line coverage: **${{ steps.coverage_summary.outputs.coverage }}%**
+
+            [Full coverage report](./path/to/your/coverage-report/index.html)

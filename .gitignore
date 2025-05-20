@@ -4,9 +4,9 @@
 *.sln
 *.vs
 *.suo
+TestResults
 
 # Build results
-
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/

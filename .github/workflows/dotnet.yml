@@ -7,7 +7,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    # branches: [ main ]
 
 jobs:
   test:
@@ -25,8 +25,33 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ./src/test/RecipeBookTest.csproj
 
-      - name: Build tests
-        run: dotnet build ./src/test/RecipeBookTest.csproj --configuration Release --no-restore
+      - name: Lint with dotnet format
+        run: dotnet format --verify-no-changes --severity warn
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test ./src/test/RecipeBookTest.csproj --verbosity normal
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: Report code coverage to Coverlet
+        run: |
+          reportgenerator \
+            "-reports:TestResults/**/coverage.cobertura.xml" \
+            "-targetdir:coveragereport" \
+            -reporttypes:Html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coveragereport
+
+      - name: Generate Build Report
+        run: echo "Build and tests succeeded for ${{ github.repository }} on ${{ github.ref_name }}"
